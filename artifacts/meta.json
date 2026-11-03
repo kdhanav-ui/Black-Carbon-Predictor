@@ -1,0 +1,107 @@
+{
+  "created": "2026-11-03T21:26:51Z",
+  "data_source": "C:\\Users\\kdhan\\Downloads\\combined_2021_2025_with_BC6.xlsx",
+  "fast_mode": false,
+  "qc": {
+    "grid_rows": 175296,
+    "bc6_valid_before_qc": 128422,
+    "bc6_cap": 43637.40400000007,
+    "bc6_valid_after_qc": 123643,
+    "raw_rows": 175296
+  },
+  "horizons": {
+    "15min": 1,
+    "1h": 4,
+    "6h": 24,
+    "24h": 96
+  },
+  "train_period": [
+    "2021-06-21 16:15:00",
+    "2024-04-11 22:45:00"
+  ],
+  "test_period": [
+    "2025-02-28 02:45:00",
+    "2025-10-17 23:45:00"
+  ],
+  "n_train_val_test": [
+    75999,
+    16190,
+    16190
+  ],
+  "deployed_models": {
+    "virtual": "ExtraTrees_compact",
+    "15min": "Blend(LightGBM_resid+ExtraTrees_compact)",
+    "1h": "Blend(LightGBM_resid+ExtraTrees_compact)",
+    "6h": "Blend(LightGBM_resid+LightGBM)",
+    "24h": "Blend(ExtraTrees_compact+LightGBM_resid+LightGBM)"
+  },
+  "virtual_interval": {
+    "nominal": 0.9,
+    "empirical_coverage": 0.888449660284126,
+    "mean_width": 5308.633272955409
+  },
+  "apportionment": {
+    "available": false
+  },
+  "insights": [
+    {
+      "title": "Winter vs monsoon",
+      "text": "Median BC is 4.2\u00d7 higher in winter (6,334 ng/m\u00b3) than in the monsoon (1,501 ng/m\u00b3)."
+    },
+    {
+      "title": "Worst hour in winter",
+      "text": "Winter BC peaks around 22:00 (median 10,241 ng/m\u00b3) and is lowest around 15:00 (3,512)."
+    },
+    {
+      "title": "Stagnation effect (winter)",
+      "text": "On near-calm winter hours (wind 0\u20130.5) median BC is 7,567 ng/m\u00b3 versus 4,297 when wind is 1.5\u20132 m/s."
+    },
+    {
+      "title": "BC as a share of PM2.5",
+      "text": "BC makes up ~24.3% of PM2.5 in winter versus ~10.5% in the monsoon (median)."
+    },
+    {
+      "title": "Pollution episodes",
+      "text": "360 episodes (BC above the site's top 10% for \u22653 h) were found; 79% were in winter, median duration 4.5 h, most often starting around 18:00."
+    },
+    {
+      "title": "Diwali night",
+      "text": "Evening-to-early-morning BC around Diwali was on average 1.3\u00d7 the surrounding days (range 0.1\u20132.0\u00d7, 4 year(s) with data)."
+    },
+    {
+      "title": "Weekday vs weekend",
+      "text": "Weekend BC is +6% relative to weekdays on average."
+    },
+    {
+      "title": "Winter to winter",
+      "text": "Mean winter BC: 2020-21: 2,711, 2021-22: 4,531, 2022-23: 11,198, 2023-24: 7,831, 2024-25: 10,336 ng/m\u00b3."
+    }
+  ],
+  "bc_percentiles": {
+    "p25": 1479.0,
+    "p50": 3041.0,
+    "p75": 6481.0,
+    "p90": 11208.0,
+    "p95": 14903.0,
+    "p99": 24684.58
+  },
+  "feature_medians_virtual": {
+    "AT": 26.57,
+    "RH": 74.29,
+    "WS": 0.35,
+    "WD": 164.4,
+    "SR": 5.26,
+    "RF": 0.0,
+    "BP": 750.0,
+    "PM25": 25.5,
+    "PM10": 59.45,
+    "NO": 4.0,
+    "NO2": 10.68,
+    "NOX": 14.41,
+    "NH3": 10.49,
+    "SO2": 16.24,
+    "CO": 0.37,
+    "O3": 5.89,
+    "BENZENE": 0.0
+  }
+}

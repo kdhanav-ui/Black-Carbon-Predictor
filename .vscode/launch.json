@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+  
+    {
+      "name": "1) Inspect my data",
+      "type": "debugpy", "request": "launch",
+      "program": "${workspaceFolder}/scripts/inspect_data.py",
+      "args": ["${input:dataPath}"], "console": "integratedTerminal"
+    },
+    {
+      "name": "2) Train on my data",
+      "type": "debugpy", "request": "launch",
+      "program": "${workspaceFolder}/run_pipeline.py",
+      "args": ["--data", "${input:dataPath}"], "console": "integratedTerminal"
+    },
+    {
+      "name": "2b) Train (fast trial)",
+      "type": "debugpy", "request": "launch",
+      "program": "${workspaceFolder}/run_pipeline.py",
+      "args": ["--data", "${input:dataPath}", "--fast"], "console": "integratedTerminal"
+    },
+    {
+      "name": "3) Dashboard",
+      "type": "debugpy", "request": "launch", "module": "streamlit",
+      "args": ["run", "app/dashboard.py"], "console": "integratedTerminal"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "dataPath", "type": "promptString",
+      "description": "Full path to your xlsx/csv",
+      "default": "C:\\Users\\kdhan\\Downloads\\combined_2021_2025_with_BC6.xlsx"
+    }
+  ]
+}

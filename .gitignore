@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+# PRIVATE DATA - never commit raw measurements (check with your supervisors first)
+data/*
+!data/.gitkeep
+*.xlsx
+*.xls
+# Large/regenerable. Remove these 2 lines if you want to commit trained models for 1-click deployment.
+# artifacts/models/*.joblib
+catboost_info/
+private_outputs/
+.vscode/launch.json.bak
