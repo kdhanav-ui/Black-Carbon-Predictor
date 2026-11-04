@@ -153,7 +153,9 @@ def add_ensemble(res, names, pte, pva, yva, yte):
     return res, f"Top-3 by val R2: {top}"
 
 
-DEPLOYABLE = ["XGBoost", "LightGBM", "CatBoost", "ExtraTrees_compact"]   # small files, no scaler needed
+# Lean by default: boosted trees only -> files of a few MB that fit free hosting. Use --with-extratrees to add
+# ExtraTrees_compact as a deployment candidate (more accurate sometimes, but ~40 MB per model).
+DEPLOYABLE = ["XGBoost", "LightGBM"]
 
 
 def fit_extras(spi, fast, residual):
@@ -210,7 +212,9 @@ def lgbm_contrib_importance(model, X, n=3000):
 
 
 # ------------------------------------------------------------------ main
-def run(data_path, out_dir=ARTIFACTS, fast=False, data_label=None):
+def run(data_path, out_dir=ARTIFACTS, fast=False, data_label=None, with_trees=False):
+    global DEPLOYABLE
+    DEPLOYABLE = ["XGBoost", "LightGBM"] + (["ExtraTrees_compact"] if with_trees else [])
     out = analysis.prepare_dirs(out_dir)
     t_start = time.time()
     log("Loading + QC")
@@ -245,8 +249,10 @@ def run(data_path, out_dir=ARTIFACTS, fast=False, data_label=None):
     res_v = pd.concat([res_v, pd.DataFrame([metrics(k, spi["te"][1], m.predict(spi["te"][0])) for k, m in extras.items()])], ignore_index=True)
     best_name, best_model = pick_deployable(fitted, pva, spi["va"][1], extras, spi["va"][0])
     log(f"  deploying {best_name} (highest validation R2)")
-    res_v = pd.concat([res_v, pd.DataFrame([metrics(f"DEPLOYED: {best_name}", spi["te"][1],
-                                                    best_model.predict(spi["te"][0]))])], ignore_index=True)
+    dep_row = metrics(f"DEPLOYED: {best_name}", spi["te"][1], best_model.predict(spi["te"][0]))
+    top_all = res_v.sort_values("R2").iloc[-1]
+    log(f"  test R2: deployed={dep_row['R2']:.4f} vs best single model overall ({top_all['Model']})={top_all['R2']:.4f}")
+    res_v = pd.concat([res_v, pd.DataFrame([dep_row])], ignore_index=True)
     tables["virtual_sensor_leaderboard"] = res_v.sort_values("R2", ascending=False).reset_index(drop=True)
 
     lg = fitted["LightGBM"]            # used for the feature-importance chart
@@ -333,6 +339,8 @@ def run(data_path, out_dir=ARTIFACTS, fast=False, data_label=None):
                                                 "NOX", "SO2", "O3", "NH3", "BENZENE", "RF")}
     for k, b in bundles.items():
         joblib.dump(b, out["models"] / f"{k}.joblib", compress=3)
+        mb = (out["models"] / f"{k}.joblib").stat().st_size / 1e6
+        log(f"  saved {k}.joblib  {mb:.1f} MB" + ("   <-- large for free hosting; consider lean models" if mb > 25 else ""))
     for k, t in tables.items():
         t.to_csv(out["tables"] / f"{k}.csv", index=False)
     recent = df.loc[sp["te"][0].index.max() - pd.Timedelta(days=4):].reset_index()

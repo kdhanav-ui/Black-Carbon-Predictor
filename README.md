@@ -1,73 +1,81 @@
 # 🌫️ Black Carbon Intelligence — Varanasi / Indo-Gangetic Plain
 
-![CI](https://github.com/<your-username>/bc6-predictor/actions/workflows/ci.yml/badge.svg)
+A leak-free ML system + 14-page public dashboard on 5 years of AE33 aethalometer data (IIT BHU, Varanasi):
+virtual BC sensor, 15 min–24 h forecasts, episode warnings, biomass-vs-fossil source split, winter/season/Diwali/episode insights,
+batch estimates, a "plan your day" risk planner and a beta live Varanasi outlook.
 
-A leak-free ML system + 14-page public dashboard built on 5 years of AE33 aethalometer data (IIT BHU, Varanasi).
+**Models:** for the virtual sensor and each horizon the pipeline benchmarks Ridge, kNN, MLP, Random Forest, Extra Trees, XGBoost,
+LightGBM, CatBoost, a log-target LightGBM, a residual-to-persistence LightGBM (forecasts) and blends. The model that is **deployed**
+is chosen by **validation R²** among the lean (small-file) candidates: XGBoost, LightGBM, their log/residual variants and blends.
+All models are still benchmarked in the leaderboard so you can see how the deployed one compares (the training log prints this too).
 
-## What it does
-| Page | Purpose |
-|---|---|
-| 🏠 Overview | KPIs, auto-generated key findings, model skill vs persistence |
-| 🧪 Estimate now | **Virtual BC sensor** from pollutants + weather (+ what-if & emission-scenario sensitivity) |
-| 📦 Batch estimate | Upload a station time series → BC estimates + 90 % intervals → CSV |
-| 🔮 Forecast & warnings | 15 min / 1 h / 6 h / 24 h forecasts + 6-h **episode warning** |
-| 🌐 Live Varanasi (beta) | Indicative BC outlook from free Open-Meteo model data |
-| 🗓️ Plan your day | Hour × month episode-risk heatmaps; cleanest / dirtiest hours |
-| ❄️ Winter & seasons | Diurnal profiles, winter-by-year, stagnation (wind) effect, cold-humid regime map, leave-one-year-out skill |
-| 🔥 Sources | Biomass vs fossil-fuel split (aethalometer model), AAE, heating signal |
-| 🌫️ Episodes | Episode catalogue, onset hour, duration, composite around onset, weather vs baseline |
-| 🎆 Diwali & events | Festival-night uplift vs surrounding days |
-| 🔬 Drivers | Driver groups by season, correlations, BC share of PM2.5, BC/CO ratio |
-| 🏆 Models & diagnostics | Leaderboards, skill vs persistence, interval coverage, bias by level/season/hour |
-| 🧾 Data & downloads | Coverage heatmap, missingness, one-click ZIP of all results |
+---------------------------------------------------------------------------------------------------
 
-**Prediction quality:** for the virtual sensor and each forecast horizon the pipeline benchmarks Ridge, kNN, MLP, Random Forest, Extra Trees (full + compact), XGBoost, LightGBM, CatBoost, a **log-target** LightGBM, a **residual-to-persistence** LightGBM (forecasts) and top-2/top-3 blends, then deploys the winner by **validation** R². 90 % split-conformal intervals are calibrated on the validation set.
+# A. Train on your PC (VS Code)
 
-## What changed vs the first version
-1. Lag features inflated R² → persistence baseline reported next to every model; *virtual sensor* (no BC history) separated from *forecasting*.
-2. Lags are built on a regular 15-min grid (before, "24 h" lag was not 24 h).
-3. Imputer fit on train only; embargo gap between splits; unit test proves no future leakage.
-
-## Run in VS Code (Windows)
-1. Install **VS Code** + the **Python** extension. `File → Open Folder…` → this folder.
-2. `Terminal → New Terminal`, then:
-   ```bat
+1. Install **Python 3.13** (tick *Add to PATH*), **VS Code** + the *Python* extension, and **Git**.
+2. VS Code → `File → Open Folder…` → this project folder.
+3. Terminal (`Terminal → New Terminal`):
+   ```powershell
    python -m venv .venv
    .venv\Scripts\activate
    pip install -r requirements.txt
    ```
-   If VS Code asks to use the new environment, click **Yes**. (Or `Ctrl+Shift+P → Python: Select Interpreter → .venv`.)
-3. `Run and Debug` (Ctrl+Shift+D) → choose a configuration → ▶:
-   * **1) Inspect my data** – prints recognised columns, QC report, yearly coverage
-   * **2) Train on my data** (or **2b** fast trial) – prompts for your xlsx path
-   * **3) Dashboard** – opens http://localhost:8501
-   Or use the terminal: `python run_pipeline.py --data "C:\path\file.xlsx"` then `streamlit run app/dashboard.py`.
-
-## Deploy publicly (free)
-1. Train locally (`artifacts/` is created). Raw-ish files (`sample_recent.csv`, out-of-fold predictions) go to `private_outputs/`, which is git-ignored; `artifacts/` holds only models + aggregated tables.
-2. **Pin versions** so pickled models load on the server: in the VS Code terminal run
-   `pip freeze | findstr /i "scikit-learn lightgbm xgboost catboost pandas numpy joblib scipy"` and put those exact `==` versions in `requirements.txt`.
-3. Create a GitHub repo, then:
-   ```bat
-   git init
-   git add .
-   git commit -m "BC intelligence dashboard"
-   git branch -M main
-   git remote add origin https://github.com/<you>/bc6-predictor.git
-   git push -u origin main
+   `Ctrl+Shift+P → Python: Select Interpreter → .venv`.
+4. (Optional) check your file: `python scripts/inspect_data.py "C:\Users\kdhan\Downloads\combined_2021_2025_with_BC6.xlsx"`
+5. Train (takes a while; add `--fast` for a quick trial):
+   ```powershell
+   python run_pipeline.py --data "C:\Users\kdhan\Downloads\combined_2021_2025_with_BC6.xlsx"
    ```
-4. Go to **share.streamlit.io** → *New app* → repo, branch `main`, file `app/dashboard.py` → *Advanced settings → Python 3.11 or 3.12* → **Deploy**. Share the `https://<name>.streamlit.app` link.
-5. Alternatives: Hugging Face Spaces (Docker) or `docker build -t bc6 . && docker run -p 8501:8501 bc6`.
+   Watch the lines `saved ...joblib  X MB` — every file should be small (a few MB). Add `--with-extratrees` only if you accept ~40 MB files.
+6. Try it locally: `streamlit run app/dashboard.py` (http://localhost:8501).
 
-Before publishing, check with your supervisors that aggregated results from the IIT BHU data may be shared.
+# B. Prepare for deployment
 
-## Layout
+```powershell
+python scripts/make_requirements.py
 ```
-src/data.py  src/features.py  src/train.py  src/insights.py  src/analysis.py
-src/predict.py  src/live.py  src/blend.py  src/api.py   app/dashboard.py   tests/
-```
+This rewrites `requirements.txt` with the exact versions you trained with (pickled models need them) and tells you which Python
+version to pick on Streamlit. Never type version numbers by hand.
 
-## Limitations
-Single site; alert levels are relative to this site's history (no official BC standard); the source split assumes AAE_ff = 1, AAE_bb = 2; Diwali dates are approximate; the live page uses modelled (CAMS) rather than measured inputs; intervals assume future conditions resemble the validation period. Research tool — not medical advice.
+# C. Push to GitHub
+
+First time only: create an empty **public** repo `bc6-predictor` on github.com (no README), then
+```powershell
+git config --global user.name "Your Name"
+git config --global user.email "your-github-email@example.com"
+git init
+git add .
+git commit -m "Black carbon dashboard"
+git branch -M main
+git remote add origin https://github.com/YOUR-USERNAME/bc6-predictor.git
+git push -u origin main
+```
+Later updates: `git add .` → `git commit -m "update"` → `git push`.
+Check on github.com that `artifacts/models/*.joblib` and `artifacts/tables/*.csv` exist. `private_outputs/` and `.venv/` are git-ignored.
+
+# D. Deploy on Streamlit Community Cloud (free)
+
+1. https://share.streamlit.io → sign in with GitHub → **Create app → Deploy a public app from GitHub**.
+2. Repository `YOUR-USERNAME/bc6-predictor`, branch `main`, main file `app/dashboard.py`.
+3. **Advanced settings → Python version** = the same minor version as your PC (the script in step B prints it; e.g. 3.13).
+4. **Deploy**. First build takes a few minutes. Afterwards every `git push` redeploys automatically.
+5. Share the `https://<name>.streamlit.app` link. Free apps hibernate after inactivity; the first visitor wakes them (~30 s).
+
+# E. Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `TypeError: Failed to fetch dynamically imported module …/index.xxxx.js` on charts | Stale browser tab after a reboot/redeploy: hard refresh (**Ctrl+Shift+R**) or open the link in a private window. Disable ad-blockers for the site. |
+| Install error `No matching distribution…` / `Failed building wheel` | Wrong Python version on Streamlit or hand-typed versions. Re-run step B and set the same Python version in Streamlit. |
+| "No trained artifacts found" | `artifacts/` was not pushed: `git add artifacts -f`, commit, push. |
+| App restarts / out-of-memory | Use lean models (default). Check the `saved … MB` lines; retrain without `--with-extratrees`. |
+| Error mentioning pickle / module / version | Library versions differ from training: redo step B and push. |
+| VS Code yellow "import could not be resolved" | Select the `.venv` interpreter (step A3). |
+
+# Limitations
+Single site; alert levels are relative to this site's history (no official BC standard); the source split assumes AAE_ff = 1, AAE_bb = 2;
+Diwali dates are approximate; the live page uses modelled CAMS data (not measurements); intervals assume future conditions resemble the
+validation period. Research tool — not medical advice.
 
 Author: Dhanav Kumar, NIT Raipur · Internship: IIT (BHU) Varanasi, Prof. Durga Prasad A. & Dr. Yogesh. Raw data is not included.

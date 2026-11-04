@@ -1,4 +1,5 @@
 """Black Carbon intelligence dashboard.   streamlit run app/dashboard.py"""
+import inspect
 import io
 import json
 import sys
@@ -36,9 +37,27 @@ def T(name):
     return pd.read_csv(p) if p.exists() else None
 
 
-def show(fig, h=360):
+_HAS_WIDTH = "width" in inspect.signature(st.plotly_chart).parameters
+
+
+def show(fig, h=360, where=None):
     fig.update_layout(height=h, margin=dict(t=40, b=10, l=10, r=10))
-    st.plotly_chart(fig)
+    target = where or st
+    if _HAS_WIDTH:
+        target.plotly_chart(fig, width="stretch")
+    else:                                   # older Streamlit versions
+        target.plotly_chart(fig, use_container_width=True)
+
+
+def safe(fn, *a, **k):
+    """Run a model call; show a friendly message instead of a stack trace if the model cannot be loaded."""
+    try:
+        return fn(*a, **k)
+    except Exception as e:
+        st.error(f"Could not run the model: {e}")
+        st.caption("If this mentions a version, module or pickle problem, the library versions on the server differ "
+                   "from the ones used for training — regenerate requirements.txt with scripts/make_requirements.py.")
+        st.stop()
 
 
 def na(msg="Not available for this training run."):
@@ -119,7 +138,7 @@ def page_estimate():
     base = {"PM25": pm25, "PM10": pm10, "CO": co, "NO2": no2, "NO": no, "SO2": so2, "O3": o3, "NH3": nh3,
             "AT": at, "RH": rh, "WS": ws, "SR": med.get("SR"), "WD": med.get("WD"), "BP": med.get("BP")}
     if st.button("Estimate BC₆", type="primary"):
-        r = P.estimate(base, when)
+        r = safe(P.estimate, base, when)
         a, b = st.columns([1, 2])
         a.metric("Estimated BC₆", f"{r['pred']:,.0f} ng/m³", help="880 nm channel")
         a.caption(f"{int(r['interval_nominal']*100)}% interval: {r['lo']:,.0f} – {r['hi']:,.0f} ng/m³")
@@ -131,13 +150,14 @@ def page_estimate():
         show(fig, 280)
         st.caption("Single-reading estimates are rougher than the test scores suggest: rolling-average features "
                    "cannot use history here. Use **Batch estimate** with a time series for better accuracy.")
-    with st.expander("🔬 What-if analysis (model sensitivity — correlational, not causal)"):
+    st.markdown("---")
+    if st.toggle("🔬 Show what-if analysis (model sensitivity — correlational, not causal)"):
         st.write("Vary one input and see how the estimated BC responds, holding everything else as entered above.")
         labels = {"WS": "Wind speed (m/s)", "AT": "Temperature (°C)", "RH": "Humidity (%)", "PM25": "PM2.5", "CO": "CO", "NO2": "NO₂"}
         var = st.selectbox("Vary", list(labels), format_func=lambda k: labels[k])
         rng_ = {"WS": (0.1, 6), "AT": (2, 42), "RH": (15, 100), "PM25": (5, 400), "CO": (0.1, 5), "NO2": (3, 120)}[var]
         xs = np.linspace(*rng_, 30)
-        ys = [P.estimate({**base, var: float(x)}, when)["pred"] for x in xs]
+        ys = [safe(P.estimate, {**base, var: float(x)}, when)["pred"] for x in xs]
         fig = go.Figure(go.Scatter(x=xs, y=ys, mode="lines", line=dict(color="crimson", width=3)))
         fig.update_layout(xaxis_title=labels[var], yaxis_title="Estimated BC₆ (ng/m³)")
         show(fig, 320)
@@ -218,6 +238,13 @@ def page_forecast():
     badge(r["horizons"]["6h"]["level"])
 
 
+@st.cache_data(ttl=600, show_spinner="Fetching latest model data…")
+def _live_raw():
+    from src import live
+    w, a = live.fetch()
+    return live.to_frame(w, a)
+
+
 def page_live():
     st.subheader("🌐 Live Varanasi outlook (beta)")
     st.warning("Uses free **model** air-quality/weather data (Open-Meteo / CAMS), not station measurements. NO, NOx, NH₃ and "
@@ -225,9 +252,7 @@ def page_live():
                "(when it rises/falls) as indicative; absolute values may be off.")
     if st.button("Fetch latest data", type="primary"):
         try:
-            from src import live
-            w, a = live.fetch()
-            raw = live.to_frame(w, a)
+            raw = _live_raw()
             out = P.estimate_batch(raw)
         except Exception as e:
             st.error(f"Could not fetch/process live data: {e}")
@@ -450,8 +475,8 @@ def page_models():
         if d is not None:
             st.markdown(f"**{title}**")
             c1, c2 = st.columns(2)
-            c1.plotly_chart(px.bar(d, x=x, y="bias", title="Bias (pred − actual, ng/m³)").update_layout(height=280, margin=dict(t=40, b=10)))
-            c2.plotly_chart(px.bar(d, x=x, y="coverage", title="Interval coverage").update_layout(height=280, margin=dict(t=40, b=10)))
+            show(px.bar(d, x=x, y="bias", title="Bias (pred − actual, ng/m³)"), 280, c1)
+            show(px.bar(d, x=x, y="coverage", title="Interval coverage"), 280, c2)
 
 
 def page_data():

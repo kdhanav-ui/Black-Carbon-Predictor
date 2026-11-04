@@ -1,5 +1,5 @@
 {
-  "created": "2026-11-03T21:26:51Z",
+  "created": "2026-11-04T08:39:02Z",
   "data_source": "C:\\Users\\kdhan\\Downloads\\combined_2021_2025_with_BC6.xlsx",
   "fast_mode": false,
   "qc": {
@@ -29,16 +29,16 @@
     16190
   ],
   "deployed_models": {
-    "virtual": "ExtraTrees_compact",
-    "15min": "Blend(LightGBM_resid+ExtraTrees_compact)",
-    "1h": "Blend(LightGBM_resid+ExtraTrees_compact)",
+    "virtual": "XGBoost",
+    "15min": "Blend(LightGBM_resid+LightGBM)",
+    "1h": "Blend(LightGBM_resid+LightGBM_log)",
     "6h": "Blend(LightGBM_resid+LightGBM)",
-    "24h": "Blend(ExtraTrees_compact+LightGBM_resid+LightGBM)"
+    "24h": "Blend(LightGBM_resid+LightGBM)"
   },
   "virtual_interval": {
     "nominal": 0.9,
-    "empirical_coverage": 0.888449660284126,
-    "mean_width": 5308.633272955409
+    "empirical_coverage": 0.8957998764669549,
+    "mean_width": 5573.46533203125
   },
   "apportionment": {
     "available": false
