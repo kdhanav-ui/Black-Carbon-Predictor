@@ -19,12 +19,37 @@ LEVELS = [  # (label, colour, advice) - relative to THIS site's historical distr
 ]
 
 
+class _LazyBundles:
+    """Loads each model file only when first used (keeps memory low on small servers)."""
+    def __init__(self, folder):
+        self.folder, self._cache = Path(folder), {}
+
+    def _path(self, key):
+        return self.folder / f"{key}.joblib"
+
+    def __contains__(self, key):
+        return self._path(key).exists()
+
+    def __getitem__(self, key):
+        if key not in self._cache:
+            if not self._path(key).exists():
+                raise KeyError(key)
+            self._cache[key] = joblib.load(self._path(key))
+        return self._cache[key]
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+
 class Predictor:
     def __init__(self, art_dir=ARTIFACTS):
         art = Path(art_dir)
         self.dir = art
         self.meta = json.loads((art / "meta.json").read_text())
-        self.bundles = {p.stem: joblib.load(p) for p in (art / "models").glob("*.joblib")}
+        self.bundles = _LazyBundles(art / "models")
 
     # ---- interpretation
     def level(self, bc):
