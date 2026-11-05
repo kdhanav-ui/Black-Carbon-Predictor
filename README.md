@@ -1,3 +1,12 @@
+# Black Carbon (BC₆) Predictor
+
+### 🚀 Live Demo
+
+**[Click here to access the Black Carbon Predictor](https://symphonious-cannoli-d6b554.netlify.app/)**
+
+Explore the live application for Black Carbon concentration prediction using machine learning and air quality data from Varanasi.
+
+---
 # 🌫️ Black Carbon Intelligence Platform — Varanasi & Indo-Gangetic Plain
 
 [![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite%20%2B%20Tailwind-61dafb?logo=react&logoColor=black)](https://vitejs.dev/)
