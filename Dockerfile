@@ -1,9 +1,18 @@
-FROM python:3.13-slim
+# Build the React dashboard, then ship it with the FastAPI model service.
+FROM node:22-alpine AS frontend-build
+WORKDIR /web
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+FROM python:3.11-slim
 WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-EXPOSE 8501 8000
-# dashboard (default).  For the API:  docker run -p 8000:8000 IMAGE uvicorn src.api:app --host 0.0.0.0 --port 8000
-CMD ["streamlit", "run", "app/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
+COPY --from=frontend-build /web/dist ./frontend/dist
+EXPOSE 8000
+CMD ["sh", "-c", "uvicorn src.api:app --host 0.0.0.0 --port ${PORT:-8000}"]

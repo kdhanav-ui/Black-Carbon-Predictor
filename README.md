@@ -1,81 +1,118 @@
-# 🌫️ Black Carbon Intelligence — Varanasi / Indo-Gangetic Plain
+# 🌫️ Black Carbon Intelligence Platform — Varanasi & Indo-Gangetic Plain
 
-A leak-free ML system + 14-page public dashboard on 5 years of AE33 aethalometer data (IIT BHU, Varanasi):
-virtual BC sensor, 15 min–24 h forecasts, episode warnings, biomass-vs-fossil source split, winter/season/Diwali/episode insights,
-batch estimates, a "plan your day" risk planner and a beta live Varanasi outlook.
+[![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite%20%2B%20Tailwind-61dafb?logo=react&logoColor=black)](https://vitejs.dev/)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%203.0-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.13-3776ab?logo=python&logoColor=white)](https://www.python.org/)
+[![Machine Learning](https://img.shields.io/badge/ML-XGBoost%20%7C%20LightGBM%20%7C%20CatBoost-ff6f00)](https://xgboost.readthedocs.io/)
 
-**Models:** for the virtual sensor and each horizon the pipeline benchmarks Ridge, kNN, MLP, Random Forest, Extra Trees, XGBoost,
-LightGBM, CatBoost, a log-target LightGBM, a residual-to-persistence LightGBM (forecasts) and blends. The model that is **deployed**
-is chosen by **validation R²** among the lean (small-file) candidates: XGBoost, LightGBM, their log/residual variants and blends.
-All models are still benchmarked in the leaderboard so you can see how the deployed one compares (the training log prints this too).
+A state-of-the-art **AI Virtual Sensor, Multi-Horizon Forecast Radar, and Chemical Physics Analytics Suite** for atmospheric **Black Carbon (BC)** in the Indo-Gangetic Plain. Built on **5 years of continuous research-grade Magee Scientific AE33 Aethalometer data** collected at the **Indian Institute of Technology (BHU), Varanasi**.
 
----------------------------------------------------------------------------------------------------
+---
 
-# A. Train on your PC (VS Code)
+## 🌟 What is Black Carbon & Why Does This Matter?
+- **What is Black Carbon (BC)?** Think of it as pure soot: the tiny, dark, toxic particles emitted when diesel trucks drive, farmers burn crop stubble, or people burn firewood and biomass for winter heating.
+- **Why is it dangerous?** It is small enough to enter deep into the lungs and bloodstream (causing respiratory and cardiovascular illness) and strongly absorbs solar radiation, accelerating climate warming and glacial melting in the Himalayas.
+- **Why build this?** A research-grade Aethalometer costs **$50,000+** and needs constant maintenance. This platform provides a **Virtual Sensor** that predicts Black Carbon using standard, inexpensive government monitoring stations (CAAQMS) with **90% conformal uncertainty intervals**, forecasts up to **24 hours ahead**, and sounds early warnings before toxic smog episodes occur.
 
-1. Install **Python 3.13** (tick *Add to PATH*), **VS Code** + the *Python* extension, and **Git**.
-2. VS Code → `File → Open Folder…` → this project folder.
-3. Terminal (`Terminal → New Terminal`):
-   ```powershell
-   python -m venv .venv
-   .venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-   `Ctrl+Shift+P → Python: Select Interpreter → .venv`.
-4. (Optional) check your file: `python scripts/inspect_data.py "C:\Users\kdhan\Downloads\combined_2021_2025_with_BC6.xlsx"`
-5. Train (takes a while; add `--fast` for a quick trial):
-   ```powershell
-   python run_pipeline.py --data "C:\Users\kdhan\Downloads\combined_2021_2025_with_BC6.xlsx"
-   ```
-   Watch the lines `saved ...joblib  X MB` — every file should be small (a few MB). Add `--with-extratrees` only if you accept ~40 MB files.
-6. Try it locally: `streamlit run app/dashboard.py` (http://localhost:8501).
+---
 
-# B. Prepare for deployment
+## 🚀 12 Interactive Studios Built In
+1. **🏠 Executive Overview**: Live KPIs (123k+ valid 15-min readings, 3,041 ng/m³ median), key AI findings, and skill vs persistence benchmarks.
+2. **🧪 Virtual BC Sensor Studio**: Enter standard weather and gas inputs (PM2.5, CO, NO₂, Wind, Temp) or pick 1-click presets (*Winter Smog*, *Rush Hour*, *Clean Monsoon*). Get instant BC readings, hazard badges, and **Tree-SHAP local feature attribution** showing which inputs drove the pollution.
+3. **🔬 What-If Simulation Lab**: Drag sliders across physical ranges to see how changing wind speed, humidity, or temperature affects soot. Test policy interventions like *"What if combustion traffic is reduced by 30%?"*.
+4. **🔮 Multi-Horizon Forecast Radar**: 15-minute, 1-hour, 6-hour, and 24-hour lead times with historical lookback and a **6-hour severe episode warning siren**.
+5. **🌐 Live Varanasi Sentinel**: Real-time Open-Meteo & Copernicus CAMS integration for Varanasi (25.32°N, 82.97°E) with 48h projections compared against 5-year historical diurnal baselines.
+6. **🗓️ Plan Your Day (Exposure Optimizer)**: Hour-by-hour exposure planner by month. Recommends the safest windows for outdoor jogging and warns against hazardous nighttime stagnation traps.
+7. **🔥 Source Apportionment**: Sandradewi dual-wavelength model (470 nm vs 950 nm) deconvolving soot into **vehicular fossil fuel (traffic diesel)** vs **solid biomass burning (woodsmoke/heating)**.
+8. **❄️ Winter Smog & Stagnation**: Deep dive into the Indo-Gangetic Plain winter crisis, wind stagnation curves, and inter-annual winter severity.
+9. **🎆 Diwali & Episode Anatomy**: High-resolution analysis of Diwali fireworks spikes and composite onset trajectory of **360+ pollution episodes**.
+10. **🏆 AI Leaderboards**: Cross-validation benchmark of LightGBM, XGBoost, CatBoost, ExtraTrees, Random Forest, Ridge, and MLP with conformal coverage diagnostics.
+11. **📦 Batch Laboratory**: Drag-and-drop CSV time-series uploader for CAAQMS data with instant interactive plots and annotated CSV export.
+12. **ℹ️ Scientific Methodology**: Full transparency on instrumentation, QC filters, embargoed splits, and academic citations.
 
+---
+
+## 💻 How to Run on Your Computer (Quick & Easy)
+
+### Step 1: Open the Project
+Open this folder in **VS Code** or your terminal.
+
+### Step 2: Set up Python
+In your terminal, activate your virtual environment (or install the dependencies):
 ```powershell
-python scripts/make_requirements.py
+pip install -r requirements.txt
 ```
-This rewrites `requirements.txt` with the exact versions you trained with (pickled models need them) and tells you which Python
-version to pick on Streamlit. Never type version numbers by hand.
 
-# C. Push to GitHub
-
-First time only: create an empty **public** repo `bc6-predictor` on github.com (no README), then
+### Step 3: Launch Everything with 1 Click!
+Just run:
 ```powershell
-git config --global user.name "Your Name"
-git config --global user.email "your-github-email@example.com"
-git init
-git add .
-git commit -m "Black carbon dashboard"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/bc6-predictor.git
-git push -u origin main
+python run_app.py
 ```
-Later updates: `git add .` → `git commit -m "update"` → `git push`.
-Check on github.com that `artifacts/models/*.joblib` and `artifacts/tables/*.csv` exist. `private_outputs/` and `.venv/` are git-ignored.
+🎉 **That's it!** 
+The script will automatically check the frontend build, start the high-speed FastAPI server, and open your web browser to **`http://localhost:8000`**.
 
-# D. Deploy on Streamlit Community Cloud (free)
+---
 
-1. https://share.streamlit.io → sign in with GitHub → **Create app → Deploy a public app from GitHub**.
-2. Repository `YOUR-USERNAME/bc6-predictor`, branch `main`, main file `app/dashboard.py`.
-3. **Advanced settings → Python version** = the same minor version as your PC (the script in step B prints it; e.g. 3.13).
-4. **Deploy**. First build takes a few minutes. Afterwards every `git push` redeploys automatically.
-5. Share the `https://<name>.streamlit.app` link. Free apps hibernate after inactivity; the first visitor wakes them (~30 s).
+## 🌐 Deploy the full app (single service)
 
-# E. Troubleshooting
+**Recommended: Render Blueprint + Docker.** The React dashboard and FastAPI model API deploy together,
+so you do not need separate Vercel/Render URLs or API environment variables.
 
-| Symptom | Fix |
-|---|---|
-| `TypeError: Failed to fetch dynamically imported module …/index.xxxx.js` on charts | Stale browser tab after a reboot/redeploy: hard refresh (**Ctrl+Shift+R**) or open the link in a private window. Disable ad-blockers for the site. |
-| Install error `No matching distribution…` / `Failed building wheel` | Wrong Python version on Streamlit or hand-typed versions. Re-run step B and set the same Python version in Streamlit. |
-| "No trained artifacts found" | `artifacts/` was not pushed: `git add artifacts -f`, commit, push. |
-| App restarts / out-of-memory | Use lean models (default). Check the `saved … MB` lines; retrain without `--with-extratrees`. |
-| Error mentioning pickle / module / version | Library versions differ from training: redo step B and push. |
-| VS Code yellow "import could not be resolved" | Select the `.venv` interpreter (step A3). |
+1. Push this project folder to GitHub.
+2. In Render, select **New → Blueprint** and connect the repository.
+3. Render reads `render.yaml`, builds the Docker image, and deploys the app.
+4. Open the generated URL. Check `/api/health` to verify the model service.
 
-# Limitations
-Single site; alert levels are relative to this site's history (no official BC standard); the source split assumes AAE_ff = 1, AAE_bb = 2;
-Diwali dates are approximate; the live page uses modelled CAMS data (not measurements); intervals assume future conditions resemble the
-validation period. Research tool — not medical advice.
+The free Render instance may sleep when idle, so the first visit can take longer. See
+[`DEPLOY.md`](DEPLOY.md) for exact local and cloud steps, troubleshooting, and Docker commands.
 
-Author: Dhanav Kumar, NIT Raipur · Internship: IIT (BHU) Varanasi, Prof. Durga Prasad A. & Dr. Yogesh. Raw data is not included.
+## 🛠️ Developer & Pipeline Commands
+
+If you ever retrain models on a new dataset or run automated tests:
+
+- **Run all automated tests:**
+  ```powershell
+  python -m pytest tests/
+  ```
+- **Retrain models on new data:**
+  ```powershell
+  python run_pipeline.py --data "path/to/your/data.xlsx"
+  ```
+- **Run frontend Vite live dev server (with hot reload):**
+  ```powershell
+  cd frontend
+  npm run dev
+  ```
+  *(Runs on http://localhost:5173 and automatically proxies API requests to http://localhost:8000)*
+
+- **Rebuild production frontend:**
+  ```powershell
+  cd frontend
+  npm run build
+  ```
+
+---
+
+## 📜 Scientific Provenance & Credits
+- **Author:** Dhanav Kumar, National Institute of Technology (NIT) Raipur.
+- **Research Supervision:** Prof. Durga Prasad A. & Dr. Yogesh, Indian Institute of Technology (BHU), Varanasi.
+- **Instrumentation:** Continuous Magee Scientific AE33 Aethalometer co-located with CPCB CAAQMS, Varanasi, India (2021–2025).
+- **Disclaimer:** Research, educational, and environmental analytics tool — not clinical medical advice. Alert thresholds are calibrated relative to this site's historical atmospheric distribution.
+
+
+
+## Deploy the FastAPI API on Vercel
+
+This repository exposes the FastAPI application from `src/api.py`. The root
+`pyproject.toml` tells Vercel to use `src.api:app` as its entrypoint.
+
+1. Import the repository into Vercel.
+2. Keep the **Root Directory** set to the repository root (`bc6-predictor` if the repository contains this folder).
+3. Ensure the root `pyproject.toml`, `requirements.txt`, `src/`, and `artifacts/` are included in the deployment.
+4. Deploy and test `/api/health`.
+
+The React/Vite frontend is a separate build (`frontend/`). For a split deployment,
+host the frontend on Netlify and configure its API base URL to point to the deployed
+FastAPI endpoint. Vercel's FastAPI deployment does not automatically serve the Vite
+frontend as a static site.
+
